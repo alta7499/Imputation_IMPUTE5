@@ -1,0 +1,42 @@
+####################################################################
+These scripts runs imputation using IMPUTE5
+in general, the flow of imputation is as follow: 
+	1. QC and Haplotype Phasing. 
+	2. Genotype Imputation
+
+All scripts accepts single a single chromosome files in VCF format. before running Haplotype phasing, all files should be QCed by user, by removing genotype missingness (0.05), Individual Missingness (0.1), extreme HWE deviation (HWE P value < 0.00001). the next section futher details the scripts.
+####################################################################
+
+A) Haplotype Phasing
+	The first Script "shapeit4.2_phasing.sh" runs necessary allignment to a reference fasta with bcftools command "norm" and runs haplotype phasing using SHAPEIT4.2. The input for this script should be placed in the "Input" folder, and the output will be placed in the "Phased" folder. the output shall have an appended "Phased", with ".vcf.gz" file extension/format.
+ 
+	Usage: ./shapeit4.2_phasing.sh CHR ##replace CHR with chromosome number. modify the script to change filename to the desired input VCF. 
+
+This script requires:
+	1. bcftools and SHAPEIT4.2
+	2. reference fasta to allign input VCF to the correct strand. this will flip reference and alternate allele according to the supplemented fasta, happens often in the case of major-minor flip in plink v1.X. in the case of positive and negative strand flip of the dataset, user 			should do their due diligence to ensure that their dataset is correctly alligned. read more: bcftools norm
+	3. Map files: MAP files per chromosome. the same files will be used for imputation script
+	4. Reference Panel VCF for reference based phasing. This will be the reference panel, but in the VCF format.
+	5. Input file placed in "Input" folder, VCF format separated into one chromosome per file. 
+
+
+B) Genotype Imputation
+	The second script "Whole_chr.IMPUTE5.Crossref.v2.sh" runs imputation using phased VCF file as input from the first script. the input for this script shall be placed in "Phased" folder, with ".vcf.gz" format. the resulting output shall be in the "Imputed" folder with ".vcf.gz" format/extension.
+
+	Usage: ./Whole_chr.IMPUTE5.Crossref.v2 CHR ##replace CHR with chromosome number.
+
+This Script requires:
+	1. impute5 program ("./impute5_1.1.5_static")
+	2. Map files for each chromosome. same files used in the first script.
+	3. Reference Panel. the format used for this is the ".imp5"
+	4. Phased input file in "Phased" folder with ".vcf.gz" extension/format. this file is automatically produced after finishing the Haplotype Phasing. 
+
+
+####################################################################
+
+After running both script, the resulting file wil be in the "Imputed" folder. the files present will be raw imputed files for each of the chromosomes. If necessary, filtering by INFO Score can be implemented with bcftools:
+
+	bcftools filter -i 'INFO >= 0.8' input.imputed.chr22.vcf.gz -Oz -o input.imputed.chr22.filtered.vcf.gz
+
+
+####################################################################
