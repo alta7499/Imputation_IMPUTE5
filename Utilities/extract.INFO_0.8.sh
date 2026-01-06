@@ -1,5 +1,6 @@
 #!/bin/bash
 #this script is specifically designed to list SNPS with certain INFO SCORE from IMPUTE2 results, which contain novel SNPs that requires to be renamed according to their chromosome number and position, instead of ".". 
+# FOR IMPUTE2 only. please use filter_post_impute.sh for IMPUTE5
 
 for i in $(seq 1 22); do
 cat ../../chr$i/*.impute2_info > ../../Allchunk/OA.chr$i.info
